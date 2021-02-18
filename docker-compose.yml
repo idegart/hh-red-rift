@@ -5,6 +5,7 @@ networks:
 
 services:
   webserver:
+    container_name: webserver
     image: nginx
     ports:
       - "8000:80"
@@ -22,6 +23,7 @@ services:
       - ./:/app
 
   app:
+    container_name: app
     build:
       context: .
       dockerfile: ./docker/php/Dockerfile
@@ -31,6 +33,7 @@ services:
       - local
 
   db:
+    container_name: db
     image: postgres
     ports:
       - ${DB_PORT}:5432
