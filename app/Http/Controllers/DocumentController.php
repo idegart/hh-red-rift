@@ -13,6 +13,11 @@ use Illuminate\Http\Response;
 
 class DocumentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('token')->only('store', 'update', 'publish');
+    }
+
     /**
      * Display a listing of the resource.
      *
