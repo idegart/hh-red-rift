@@ -45,7 +45,7 @@ class UpdateService
 
     protected function updatePayloadMeta(Payload $payload, array $data): void
     {
-        $payload->meta()->updateOrCreate($data);
+        $payload->meta()->updateOrCreate([], $data);
     }
 
     protected function updatePayloadActions(Payload $payload, array $data): void

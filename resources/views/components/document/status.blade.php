@@ -1,0 +1,1 @@
+<span class="badge {{ $document->status === \App\Contracts\DocumentStatusContract::DRAFT ? 'bg-danger' : 'bg-primary' }}">{{ $document->status }}</span>

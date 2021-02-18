@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\Document\{IndexRequest, PublishRequest, StoreRequest, UpdateRequest};
 use App\Http\Resources\DocumentResource;
 use App\Models\Document;
 use App\Services\Document\{CreateService, PublishService, UpdateService};
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 
@@ -16,16 +17,20 @@ class DocumentController extends Controller
      * Display a listing of the resource.
      *
      * @param IndexRequest $request
-     * @return JsonResource
+     * @return JsonResource|View
      */
-    public function index(IndexRequest $request): JsonResource
+    public function index(IndexRequest $request)
     {
-        return DocumentResource::collection(
-            Document::query()
-                ->paginate(
-                    $request->perPage()
-                )
-        );
+        $documents = Document::query()
+            ->paginate(
+                $request->perPage()
+            );
+
+        if ($request->expectsJson()) {
+            return DocumentResource::collection($documents);
+        }
+
+        return view('pages.documents.index', compact('documents'));
     }
 
     /**
@@ -33,26 +38,28 @@ class DocumentController extends Controller
      *
      * @param StoreRequest $request
      * @param CreateService $createService
-     * @return JsonResource
+     * @return RedirectResponse|JsonResource
      */
-    public function store(StoreRequest $request, CreateService $createService): JsonResource
+    public function store(StoreRequest $request, CreateService $createService)
     {
-        return new DocumentResource(
-            $createService->createFromRequest(
-                $request
-            )
-        );
+        $document = $createService->createFromRequest($request);
+
+        if ($request->wantsJson()) {
+            return new DocumentResource($document);
+        }
+
+        return redirect(route('documents.show', compact('document')));
     }
 
     /**
      * Display the specified resource.
      *
      * @param Document $document
-     * @return Response
+     * @return View
      */
-    public function show(Document $document): Response
+    public function show(Document $document): View
     {
-        //
+        return view('pages.documents.show', compact('document'));
     }
 
     /**
@@ -61,16 +68,17 @@ class DocumentController extends Controller
      * @param UpdateRequest $request
      * @param Document $document
      * @param UpdateService $updateService
-     * @return JsonResource
+     * @return JsonResource|RedirectResponse
      */
-    public function update(UpdateRequest $request, Document $document, UpdateService $updateService): JsonResource
+    public function update(UpdateRequest $request, Document $document, UpdateService $updateService)
     {
-        return new DocumentResource(
-            $updateService->updateByRequest(
-                $request,
-                $document
-            )
-        );
+        $document = $updateService->updateByRequest($request, $document);
+
+        if ($request->wantsJson()) {
+            return new DocumentResource($document);
+        }
+
+        return redirect(route('documents.show', compact('document')));
     }
 
     /**
@@ -88,15 +96,16 @@ class DocumentController extends Controller
      * @param PublishRequest $request
      * @param Document $document
      * @param PublishService $publishService
-     * @return JsonResource
+     * @return JsonResource|RedirectResponse
      */
-    public function publish(PublishRequest $request, Document $document, PublishService $publishService): JsonResource
+    public function publish(PublishRequest $request, Document $document, PublishService $publishService)
     {
-        return new DocumentResource(
-            $publishService->publishByRequest(
-                $request,
-                $document
-            )
-        );
+        $document = $publishService->publishByRequest($request, $document);
+
+        if ($request->expectsJson()) {
+            return new DocumentResource($document);
+        }
+
+        return redirect(route('documents.show', compact('document')));
     }
 }
